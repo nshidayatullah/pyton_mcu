@@ -340,7 +340,7 @@ def map_columns(df):
             val_str = str(value).strip().upper()
             
             # Handle empty or dash values
-            if val_str in ['', '-', 'NONE', 'NULL', 'NIL']:
+            if val_str in ['', '-', 'NONE', 'NULL', 'NIL', 'N/A']:
                 return ''
             
             # Handle numeric values (0 = TIDAK, non-zero = YA)
@@ -354,11 +354,11 @@ def map_columns(df):
             except:
                 pass
             
-            # Handle various positive indicators
-            positive_indicators = ['YA', 'IYA', 'YES', 'POSITIF', '+', 'MEROKOK']
+            # Handle various positive indicators for smoking
+            positive_indicators = ['YA', 'IYA', 'YES', 'POSITIF', '+', 'MEROKOK', 'MEROK0K', 'ROKOK']
             
-            # Handle various negative indicators
-            negative_indicators = ['TIDAK', 'NO', 'NEGATIF', '-', 'TIDAK MEROKOK']
+            # Handle various negative indicators for non-smoking
+            negative_indicators = ['TIDAK', 'NO', 'NEGATIF', '-', 'TIDAK MEROKOK', 'N0', 'N0N', 'NON', 'TIDAK ROKOK', 'TIDAK MEROK0K']
             
             # Check for positive indicators
             if any(indicator in val_str for indicator in positive_indicators):
@@ -368,8 +368,8 @@ def map_columns(df):
             if any(indicator in val_str for indicator in negative_indicators):
                 return 'TIDAK'
             
-            # Default to TIDAK if no clear indication
-            return 'TIDAK'
+            # If we can't determine, return as empty
+            return ''
         
         result_df['KEBIASAAN MEROKOK'] = df['KB. Merokok (input)'].apply(process_smoking)
     if 'BUTA WARNA (NEG/TOTAL/PARSIAL)' in df.columns:
