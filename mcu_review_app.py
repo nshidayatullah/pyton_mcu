@@ -368,6 +368,14 @@ def map_columns(df):
             if any(indicator in val_str for indicator in negative_indicators):
                 return 'TIDAK'
             
+            # Special case handling for common values in the dataset
+            if val_str == 'TIDAK':
+                return 'TIDAK'
+            elif val_str == 'IYA':
+                return 'YA'
+            elif val_str == 'YA':
+                return 'YA'
+            
             # If we can't determine, return as empty
             return ''
         
