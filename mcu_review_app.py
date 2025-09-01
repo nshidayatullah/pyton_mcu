@@ -339,6 +339,21 @@ def map_columns(df):
             # Convert to string and standardize
             val_str = str(value).strip().upper()
             
+            # Handle empty or dash values
+            if val_str in ['', '-', 'NONE', 'NULL', 'NIL']:
+                return ''
+            
+            # Handle numeric values (0 = TIDAK, non-zero = YA)
+            try:
+                numeric_val = pd.to_numeric(value, errors='coerce')
+                if not pd.isna(numeric_val):
+                    if numeric_val == 0:
+                        return 'TIDAK'
+                    else:
+                        return 'YA'
+            except:
+                pass
+            
             # Handle various positive indicators
             positive_indicators = ['YA', 'IYA', 'YES', 'POSITIF', '+', 'MEROKOK']
             
@@ -353,8 +368,8 @@ def map_columns(df):
             if any(indicator in val_str for indicator in negative_indicators):
                 return 'TIDAK'
             
-            # Default to original value if no clear indication
-            return str(value).strip()
+            # Default to TIDAK if no clear indication
+            return 'TIDAK'
         
         result_df['KEBIASAAN MEROKOK'] = df['KB. Merokok (input)'].apply(process_smoking)
     if 'BUTA WARNA (NEG/TOTAL/PARSIAL)' in df.columns:
