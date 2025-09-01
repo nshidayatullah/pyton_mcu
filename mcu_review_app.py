@@ -28,7 +28,7 @@ def map_columns(df):
         'SGOT(<40)', 'SGPT(<50)', 'ABNORMAL LAB', 'HbsAg', 'AntiHbs', 'Urin',
         'Narkoba', 'ALKOHOL TEST', 'Rotgen', 'ABNORMAL RONTGEN', 'EKG', 'ABNORMAL EKG', 'MATA', 'GRADE/VISUS',
         'GIGI DAN MULUT', 'TELINGA', 'HEMOROID', 'ALERGI', 'KEBIASAAN MEROKOK',
-        'ABNORMAL FISIK LAINNYA', 'BUTA WARNA', 'SPIROMETRY', 'SPIROMETRY_OBSTRUKTIF',
+        'ABNORMAL FISIK LAINNYA', 'BUTA WARNA', 'BUTA WARNA_hasil', 'SPIROMETRY', 'SPIROMETRY_OBSTRUKTIF',
         'AUDIOMETRY', 'AUDIOMETRY_KANAN'
     ]
     
@@ -358,7 +358,38 @@ def map_columns(df):
         
         result_df['KEBIASAAN MEROKOK'] = df['KB. Merokok (input)'].apply(process_smoking)
     if 'BUTA WARNA (NEG/TOTAL/PARSIAL)' in df.columns:
-        result_df['BUTA WARNA'] = df['BUTA WARNA (NEG/TOTAL/PARSIAL)']
+        def process_color_vision(value):
+            if pd.isna(value):
+                return '', ''  # Return empty for both columns if NaN
+            
+            # Convert to string and strip whitespace
+            val_str = str(value).strip().upper()
+            
+            # Handle empty values
+            if val_str in ['', '-', 'NONE', 'NULL', 'N/A', 'TIDAK ADA']:
+                return '', ''
+            
+            # Map values to appropriate categories
+            if val_str in ['NEG', 'NEGATIF', 'NORMAL', 'N']:
+                return 'NORMAL', 'NORMAL'
+            elif val_str in ['PARSIAL', 'P', 'SEBAGIAN']:
+                return 'PARSIAL', 'PARSIAL'
+            elif val_str in ['TOTAL', 'T', 'SEMPURNA']:
+                return 'TOTAL', 'TOTAL'
+            else:
+                # For any other values, return the original value in the detail column
+                return val_str, val_str
+        
+        # Process BUTA WARNA column
+        color_vision_results = df['BUTA WARNA (NEG/TOTAL/PARSIAL)'].apply(process_color_vision)
+        result_df['BUTA WARNA'] = [r[0] for r in color_vision_results]  # Main result
+        # Add new column for detailed results
+        if 'BUTA WARNA_hasil' not in result_df.columns:
+            result_df.insert(
+                result_df.columns.get_loc('BUTA WARNA') + 1, 
+                'BUTA WARNA_hasil', 
+                [r[1] for r in color_vision_results]
+            )
     
     return result_df
 
